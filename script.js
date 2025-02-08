@@ -14,6 +14,10 @@ Available commands:
   - joke: Tell a joke
   - echo [text]: Repeat the text
   - photo: Show a random photo
+  - whatis [query]: Search Google for the query
+  - video [query]: Search YouTube for the query
+  - solve [expression]: Calculate a math expression
+  - system: Show system information
   - exit: Close the terminal (reloads the page)
   `,
   about: "CLIMPLE is a simple terminal project template for making portfolio websites. It's built with HTML, CSS, and JavaScript. Feel free to customize it for your own use! 🚀",
@@ -30,7 +34,38 @@ Twitter: <a href="https://twitter.com/grembim" target="_blank">twitter.com/gremb
   date: new Date().toLocaleString(),
   photo: `<img src="https://random.imagecdn.app/200/200" alt="Random Photo" width="200" height="200">`,
   joke: get_random_joke(),
+  system: get_system_information(),
 };
+
+function get_system_information() {
+  const systemInfo = `
+  System Information: 
+  - OS: ${navigator.platform}
+  - Browser: ${navigator.appName} ${navigator.appVersion}
+  - Language: ${navigator.language}
+  - Cookies: ${navigator.cookieEnabled ? "Enabled" : "Disabled"}
+  - Online: ${navigator.onLine ? "Yes" : "No"}
+  - Screen Resolution: ${screen.width}x${screen.height}
+  - Color Depth: ${screen.colorDepth}-bit
+  - Device Memory: ${navigator.deviceMemory}GB
+  - Hardware Concurrency: ${navigator.hardwareConcurrency}
+  - Battery: ${navigator.getBattery ? "Supported" : "Not supported"}
+  - Geolocation: ${navigator.geolocation ? "Supported" : "Not supported"}
+  - WebSockets: ${window.WebSocket ? "Supported" : "Not supported"}
+  - WebRTC: ${window.RTCPeerConnection ? "Supported" : "Not supported"}
+  - Web Workers: ${window.Worker ? "Supported" : "Not supported"}
+  - Service Workers: ${navigator.serviceWorker ? "Supported" : "Not supported"}
+  - IndexedDB: ${window.indexedDB ? "Supported" : "Not supported"}
+  - WebAssembly: ${window.WebAssembly ? "Supported" : "Not supported"}
+  - Do Not Track: ${navigator.doNotTrack ? "Enabled" : "Disabled"}
+  `;
+  return systemInfo;
+}
+
+function isValidMathExpression(expression) {
+  const mathRegex = /^[\d\s+\-*/().]+$/;
+  return mathRegex.test(expression);
+}
 
 function executeCommand(input) {
   const command = input.trim();
@@ -48,9 +83,26 @@ function executeCommand(input) {
   } else if (command === "exit") {
     location.reload();
   } else if (command.startsWith("echo")) {
-    appendOutput(command.replace("echo", ""));
-  } else if (commands[command]) {
+    appendOutput(command.replace("echo", "").trim());
+  } else if (command.startsWith("whatis")) {
+    const searchQuery = command.replace("whatis", "").trim();
+    window.open(`https://www.google.com/search?q=${searchQuery}`, "_blank");
+  } else if (command.startsWith("video")) {
+    const searchQuery = command.replace("video", "").trim();
+    window.open(`https://www.youtube.com/results?search_query=${searchQuery}`, "_blank");
+   } else if (commands[command]) {
     appendOutput(commands[command]);
+  } else if (command.startsWith("solve")) {
+    const expression = command.replace("solve", "").trim();
+    try {
+      if(isValidMathExpression(expression) === false) {
+        throw new Error("Invalid math expression");
+      }
+      const result = eval(expression);
+      appendOutput(result);
+    } catch (error) {
+      appendOutput(`Error: ${error.message}`);
+    }
   } else {
     appendOutput(`Command not found: ${command}`);
   }
